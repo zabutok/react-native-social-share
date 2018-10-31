@@ -13,6 +13,9 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.Callback;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
+import android.app.Activity;
 
 import java.util.List;
 import java.io.File;
@@ -68,10 +71,17 @@ public class KDSocialShareModule extends ReactContextBaseJavaModule {
         }
       } else if (options.hasKey("link")) {
         String shareUrl = options.getString("link");
+        ShareLinkContent content = new ShareLinkContent.Builder()
+                .setContentUrl(Uri.parse(shareUrl))
+                .build();
+        final Activity activity = getCurrentActivity();
+        ShareDialog shareDialog = new ShareDialog(activity);
+        shareDialog.show(content);
+        //return;
         String sharerUrl = "https://www.facebook.com/sharer/sharer.php?u=" + Uri.encode(shareUrl);
-        shareIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl));
+        //shareIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl));
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-          shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          //shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
       } else {
         if (options.hasKey("text") && !doesPackageExist("com.facebook.katana")) {
@@ -82,7 +92,7 @@ public class KDSocialShareModule extends ReactContextBaseJavaModule {
         return;
       }
 
-      reactContext.startActivity(shareIntent);
+      //reactContext.startActivity(shareIntent);
     } catch (Exception ex) {
       callback.invoke("error");
     }
@@ -92,13 +102,13 @@ public class KDSocialShareModule extends ReactContextBaseJavaModule {
     PackageManager pm = this.reactContext.getPackageManager();
     try {
       PackageInfo info = pm.getPackageInfo(
-        targetPackage,
-        PackageManager.GET_META_DATA
+              targetPackage,
+              PackageManager.GET_META_DATA
       );
-     } catch (PackageManager.NameNotFoundException e) {
-       return false;
-     }
-     return true;
+    } catch (PackageManager.NameNotFoundException e) {
+      return false;
+    }
+    return true;
   }
 
   private void tweetViaTwitterComposerClass(String shareText) throws Exception {
